@@ -1422,6 +1422,10 @@
         width: min(760px, calc(100% - 48px))
       }
 
+      .header.container {
+        width: calc(100% - 48px)
+      }
+
       main.container {
         width: min(1080px, calc(100% - 48px))
       }
