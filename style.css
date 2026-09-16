@@ -134,6 +134,14 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, .04)
     }
 
+    .mobile-mode-btn {
+      display: none
+    }
+
+    body.fab-avoiding .mobile-mode-btn {
+      display: grid
+    }
+
     .hero {
       padding: 28px 0 18px
     }
@@ -306,6 +314,22 @@
 
     .hidden {
       display: none !important
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0
+    }
+
+    body.modal-open {
+      overflow: hidden
     }
 
     .stepper {
@@ -1032,6 +1056,12 @@
       opacity: 1;
       transform: none;
       pointer-events: auto
+    }
+
+    .fab-wrap.avoid-overlap {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none
     }
 
     .fab-option {

@@ -21,8 +21,9 @@
           </div>
         </div>
         <div class="header-actions">
+          <button class="icon-btn mobile-mode-btn" id="mobileModeBtn" aria-label="เปลี่ยนโหมด" title="เปลี่ยนโหมด"></button>
           <button class="icon-btn" id="helpBtn" aria-label="ดูวิธีใช้งานอีกครั้ง"></button>
-          <button class="icon-btn" id="themeBtn" aria-label="สลับธีม"></button>
+          <button class="icon-btn" id="themeBtn" aria-label="สลับธีม" aria-pressed="false"></button>
         </div>
       </div>
     </header>
@@ -48,15 +49,16 @@
               <div class="field">
                 <label for="prevMeter">เลขมิเตอร์ครั้งก่อน</label>
                 <input id="prevMeter" type="number" min="0" step="any" placeholder="เช่น 1,250">
-                <div class="error" id="prevError"></div>
+                <div class="error" id="prevError" role="alert" aria-live="assertive"></div>
               </div>
               <div class="field">
                 <label for="currentMeter">เลขมิเตอร์ครั้งนี้</label>
                 <input id="currentMeter" type="number" min="0" step="any" placeholder="เช่น 1,370">
-                <div class="error" id="currentError"></div>
+                <div class="error" id="currentError" role="alert" aria-live="assertive"></div>
               </div>
             </div>
-            <button class="method-toggle-link" id="toggleMeterMode" type="button"><span data-icon="scan-line"
+            <button class="method-toggle-link" id="toggleMeterMode" type="button" aria-expanded="false"
+              aria-controls="meterFields unitsValueWrap"><span data-icon="scan-line"
                 data-icon-size="13"></span><span id="toggleMeterModeLabel">ไม่มีเลขมิเตอร์ครั้งก่อน?
                 กรอกจำนวนหน่วยเอง</span></button>
 
@@ -72,10 +74,10 @@
               <label for="billRateCustom">อัตราค่าไฟ (บาท / หน่วย)</label>
               <div class="rate-row">
                 <div class="rate-pills" id="ratePills">
-                  <button type="button" class="rate-pill" data-rate="7">7 บ.</button>
-                  <button type="button" class="rate-pill" data-rate="8">8 บ.</button>
-                  <button type="button" class="rate-pill" data-rate="9">9 บ.</button>
-                  <button type="button" class="rate-pill custom" id="rateCustomBtn">กรอกเอง</button>
+                  <button type="button" class="rate-pill" data-rate="7" aria-pressed="false">7 บ.</button>
+                  <button type="button" class="rate-pill" data-rate="8" aria-pressed="false">8 บ.</button>
+                  <button type="button" class="rate-pill" data-rate="9" aria-pressed="false">9 บ.</button>
+                  <button type="button" class="rate-pill custom" id="rateCustomBtn" aria-pressed="false">กรอกเอง</button>
                 </div>
               </div>
               <input id="billRateCustom" class="rate-custom-input" type="number" min="0" step="any"
@@ -87,13 +89,14 @@
             <div class="field" data-walk="people">
               <label>จำนวนคนที่หารค่าไฟ</label>
               <div class="stepper">
-                <button id="minusPeople" aria-label="ลดจำนวนคน">−</button>
+                <button id="minusPeople" type="button" aria-label="ลดจำนวนคน">−</button>
                 <strong id="peopleValue">1 คน</strong>
-                <button id="plusPeople" aria-label="เพิ่มจำนวนคน">+</button>
+                <button id="plusPeople" type="button" aria-label="เพิ่มจำนวนคน">+</button>
               </div>
             </div>
 
-            <button class="more-options-toggle" id="moreOptionsToggle" type="button">
+            <button class="more-options-toggle" id="moreOptionsToggle" type="button" aria-expanded="false"
+              aria-controls="moreOptions">
               <span>ตัวเลือกเพิ่มเติม</span><span class="chevron" data-icon="chevron-down" data-icon-size="16"></span>
             </button>
             <div class="more-options hidden" id="moreOptions">
@@ -110,7 +113,7 @@
             </div>
           </div>
 
-          <div class="result-card" id="billResult" data-walk="result">
+          <div class="result-card" id="billResult" data-walk="result" aria-describedby="billStatus">
             <div class="result-title">
               <span class="result-title-left"><span class="section-badge" data-icon="zap"
                   data-icon-size="14"></span>สรุปค่าไฟเดือนนี้</span>
@@ -146,6 +149,7 @@
                 <div class="per-person" id="rPersonSub">กรอกข้อมูลเพื่อเริ่มคำนวณ</div>
               </div><strong id="rTotal">฿0</strong>
             </div>
+            <div class="sr-only" id="billStatus" role="status" aria-live="polite"></div>
             <div class="warning hidden" id="highWarning">ค่าไฟต่อคนค่อนข้างสูงนะ
               👀<br>ลองเช็กเครื่องใช้ไฟฟ้าที่กินไฟเยอะ เช่น แอร์ เครื่องทำน้ำอุ่น หรือกระติกน้ำร้อน</div>
             <button class="primary-btn summary-btn" id="billSummary"><span class="btn-icon"
@@ -175,7 +179,7 @@
                 id="addApplianceIcon"></span>เพิ่มเครื่องใช้ไฟฟ้า</button>
           </div>
 
-          <div class="result-card" id="appResult" data-walk="appResult">
+          <div class="result-card" id="appResult" data-walk="appResult" aria-describedby="appStatus">
             <div class="result-title">ประมาณการใช้ไฟ</div>
             <div class="result-grid">
               <div class="metric is-empty"><span>หน่วยไฟรวม / วัน</span><strong id="aUnits">—</strong></div>
@@ -186,6 +190,7 @@
                 <div class="per-person">ต่อวัน</div>
               </div><strong id="aDaily">฿0</strong>
             </div>
+            <div class="sr-only" id="appStatus" role="status" aria-live="polite"></div>
             <div class="breakdown" id="breakdown"></div>
             <div class="note">ตัวเลขนี้เป็นการประมาณคร่าวๆ จากกำลังไฟและเวลาที่คุณกรอก การใช้ไฟจริงอาจแตกต่างกันได้
             </div>
@@ -229,12 +234,14 @@
         <button class="fab-option" data-switch="appliance"><span class="btn-icon"
             id="fabApplianceIcon"></span>ประมาณจากเครื่องใช้ไฟฟ้า</button>
       </div>
-      <button class="fab" id="fab" aria-label="เปลี่ยนโหมด" title="เปลี่ยนโหมด"></button>
+      <button class="fab" id="fab" aria-label="เปลี่ยนโหมด" aria-expanded="false" aria-controls="fabMenu"
+        title="เปลี่ยนโหมด"></button>
     </div>
   </div>
 
-  <div class="modal hidden" id="summaryModal" role="dialog" aria-modal="true" aria-label="สรุปผล">
+  <div class="modal hidden" id="summaryModal" role="dialog" aria-modal="true" aria-labelledby="summaryModalTitle">
     <div class="modal-card">
+      <h2 class="sr-only" id="summaryModalTitle">สรุปผลการคำนวณ</h2>
       <div id="captureCard" class="capture"></div>
       <div class="modal-actions">
         <button class="secondary-btn" id="closeSummary">ปิด</button>

@@ -70,6 +70,11 @@ function animateNumber(el, toValue, formatFn, duration) {
   }
   requestAnimationFrame(tick);
 }
+function setNumberImmediately(id, value, formatFn) {
+  const el = $(id);
+  countState.set(el, value);
+  el.textContent = formatFn(value);
+}
 function pulseBox(el) {
   el.classList.remove("pulse");
   void el.offsetWidth; // reflow เพื่อรีสตาร์ท animation ได้ทุกครั้ง
@@ -102,10 +107,14 @@ function setTheme(theme) {
   document.documentElement.dataset.theme = theme;
   localStorage.setItem("electricity_theme", theme);
   $("themeBtn").innerHTML = iconSvg(theme === "dark" ? "sun" : "moon", 20);
+  $("themeBtn").setAttribute("aria-pressed", theme === "dark");
+  $("themeBtn").setAttribute("aria-label", theme === "dark" ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด");
 }
 setTheme(localStorage.getItem("electricity_theme") || "light");
 
 $("brandIcon").innerHTML = iconSvg("zap", 22);
+$("mobileModeBtn").innerHTML = iconSvg("sliders-horizontal", 20);
+$("mobileModeBtn").setAttribute("aria-label", "เปลี่ยนเป็นโหมดประมาณเครื่องใช้ไฟฟ้า");
 $("helpBtn").innerHTML = iconSvg("help-circle", 20);
 $("billSummaryIcon").innerHTML = iconSvg("scan-line", 17);
 $("addApplianceIcon").innerHTML = iconSvg("plus", 17);
@@ -124,6 +133,7 @@ function setMeterMode(useMeter) {
   $("meterFields").classList.toggle("hidden", !useMeter);
   $("unitsValueWrap").classList.toggle("hidden", useMeter);
   $("toggleMeterModeLabel").textContent = useMeter ? "กรอกจำนวนหน่วยเอง" : "กลับไปกรอกเลขมิเตอร์";
+  $("toggleMeterMode").setAttribute("aria-expanded", !useMeter);
   calculateBill();
 }
 $("toggleMeterMode").onclick = () => setMeterMode(billMethod !== "meter");
@@ -131,6 +141,7 @@ $("toggleMeterMode").onclick = () => setMeterMode(billMethod !== "meter");
 $("moreOptionsToggle").onclick = () => {
   const open = $("moreOptions").classList.toggle("hidden");
   $("moreOptionsToggle").classList.toggle("open", !open);
+  $("moreOptionsToggle").setAttribute("aria-expanded", !open);
 };
 ["prevMeter", "currentMeter"].forEach(id => $(id).addEventListener("input", () => {
   const p = val("prevMeter"), c = val("currentMeter");
@@ -141,19 +152,27 @@ $("moreOptionsToggle").onclick = () => {
 /* ปุ่มกดเลือกอัตราค่าไฟแบบด่วน 7/8/9 บาท + ยังกรอกเองได้ผ่านช่อง custom */
 function setRate(rateStr, fromCustom) {
   $("billRate").value = rateStr;
-  document.querySelectorAll(".rate-pill[data-rate]").forEach(b => b.classList.toggle("active", !fromCustom && b.dataset.rate === String(rateStr)));
+  document.querySelectorAll(".rate-pill[data-rate]").forEach(b => {
+    const active = !fromCustom && b.dataset.rate === String(rateStr);
+    b.classList.toggle("active", active);
+    b.setAttribute("aria-pressed", active);
+  });
+  $("rateCustomBtn").setAttribute("aria-pressed", fromCustom);
   calculateBill();
 }
 document.querySelectorAll(".rate-pill[data-rate]").forEach(btn => {
   btn.onclick = () => {
     $("rateCustomBtn").classList.remove("active");
+    $("rateCustomBtn").setAttribute("aria-pressed", "false");
     $("billRateCustom").classList.remove("show"); $("billRateCustom").value = "";
     setRate(btn.dataset.rate, false);
   };
 });
 $("rateCustomBtn").onclick = () => {
   $("rateCustomBtn").classList.add("active");
+  $("rateCustomBtn").setAttribute("aria-pressed", "true");
   document.querySelectorAll(".rate-pill[data-rate]").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".rate-pill[data-rate]").forEach(b => b.setAttribute("aria-pressed", "false"));
   $("billRateCustom").classList.add("show");
   $("billRateCustom").focus();
 };
@@ -184,6 +203,7 @@ function calculateBill() {
     ["rUnits", "rEnergy", "rService", "rPerson"].forEach(id => { $(id).textContent = "—"; countState.delete($(id)) });
     animateNumber($("rTotal"), 0, v => money(v));
     $("rPersonSub").textContent = "กรอกหน่วยและอัตราค่าไฟเพื่อเริ่มคำนวณ";
+    $("billStatus").textContent = "กรอกหน่วยและอัตราค่าไฟเพื่อเริ่มคำนวณ";
     $("comparisonChip").classList.add("hidden"); $("comparisonBars").classList.add("hidden"); $("highWarning").classList.add("hidden");
     return;
   }
@@ -195,6 +215,7 @@ function calculateBill() {
   animateNumber($("rPerson"), per, v => money(v));
   animateNumber($("rTotal"), total, v => money(v));
   $("rPersonSub").textContent = `${people} คน · คนละ ${money(per)}`;
+  $("billStatus").textContent = `คำนวณแล้ว ยอดรวม ${money(total)} หาร ${people} คน คนละ ${money(per)}`;
   pulseBox($("billTotalBox"));
   const last = val("lastBill");
   if (last !== null) {
@@ -227,14 +248,45 @@ function switchMode(next) {
   $("heroTitle").innerHTML = mode === "bill" ? "เช็กค่าไฟเดือนนี้<br>ให้รู้ก่อนบิลมา" : "ลองประมาณค่าไฟ<br>จากเครื่องใช้ไฟฟ้า";
   $("heroDesc").textContent = mode === "bill" ? "มีเลขมิเตอร์หรือยอดหน่วยอยู่แล้ว? ใส่ข้อมูลไม่กี่ช่อง แล้วดูยอดรวมกับค่าไฟต่อคนได้ทันที" : "ยังไม่มีบิล? ใส่เครื่องใช้ไฟฟ้าที่ใช้ในห้อง แล้วดูค่าไฟคร่าวๆ";
   $("fabWrap").classList.remove("open");
+  $("fab").setAttribute("aria-expanded", "false");
+  $("mobileModeBtn").setAttribute("aria-label", next === "bill" ? "เปลี่ยนเป็นโหมดประมาณเครื่องใช้ไฟฟ้า" : "เปลี่ยนเป็นโหมดคำนวณจากบิลจริง");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 document.querySelectorAll("[data-switch]").forEach(b => b.onclick = () => switchMode(b.dataset.switch));
+$("mobileModeBtn").onclick = () => switchMode(mode === "bill" ? "appliance" : "bill");
 
-$("fab").onclick = () => $("fabWrap").classList.toggle("open");
+$("fab").onclick = () => {
+  const open = $("fabWrap").classList.toggle("open");
+  $("fab").setAttribute("aria-expanded", open);
+};
 document.addEventListener("click", e => {
-  if (!$("fabWrap").contains(e.target)) $("fabWrap").classList.remove("open");
+  if (!$("fabWrap").contains(e.target)) {
+    $("fabWrap").classList.remove("open");
+    $("fab").setAttribute("aria-expanded", "false");
+  }
 });
+
+function updateFabOverlap() {
+  if (!window.matchMedia("(max-width: 640px)").matches) {
+    $("fabWrap").classList.remove("avoid-overlap");
+    return;
+  }
+  const fab = $("fabWrap").getBoundingClientRect();
+  const overlaps = [$("billResult"), $("appResult")].some(result => {
+    if (result.closest(".hidden")) return false;
+    const rect = result.getBoundingClientRect();
+    return fab.right > rect.left && fab.left < rect.right && fab.bottom > rect.top && fab.top < rect.bottom;
+  });
+  $("fabWrap").classList.toggle("avoid-overlap", overlaps);
+  document.body.classList.toggle("fab-avoiding", overlaps);
+  if (overlaps) {
+    $("fabWrap").classList.remove("open");
+    $("fab").setAttribute("aria-expanded", "false");
+  }
+}
+window.addEventListener("scroll", updateFabOverlap, { passive: true });
+window.addEventListener("resize", updateFabOverlap);
+updateFabOverlap();
 
 function addAppliance(data = {}) {
   const id = ++applianceId;
@@ -256,8 +308,8 @@ function renderAppliances() {
         <button class="remove-btn" aria-label="ลบเครื่องใช้ไฟฟ้า" onclick="removeAppliance(${a.id})">${iconSvg("trash-2", 17)}</button>
       </div>
       <div class="appliance-fields">
-        <div class="field" style="margin:0"><label>กำลังไฟ (W)</label><input class="app-watts" type="number" min="0" step="any" value="${a.watts}"><div class="example">ค่าเริ่มต้นเป็นตัวอย่าง แก้ตามฉลากจริง</div></div>
-        <div class="field" style="margin:0"><label>เวลาใช้งาน (นาที/วัน)</label><input class="app-minutes" type="number" min="0" step="any" value="${a.minutes}"><div class="example">ตัวอย่างเท่านั้น — ปรับตามการใช้งานจริง</div></div>
+        <div class="field" style="margin:0"><label for="app-watts-${a.id}">กำลังไฟ (W)</label><input id="app-watts-${a.id}" class="app-watts" type="number" min="0" step="any" value="${a.watts}"><div class="example">ค่าเริ่มต้นเป็นตัวอย่าง แก้ตามฉลากจริง</div></div>
+        <div class="field" style="margin:0"><label for="app-minutes-${a.id}">เวลาใช้งาน (นาที/วัน)</label><input id="app-minutes-${a.id}" class="app-minutes" type="number" min="0" step="any" value="${a.minutes}"><div class="example">ตัวอย่างเท่านั้น — ปรับตามการใช้งานจริง</div></div>
       </div>
     </div>`).join("");
   document.querySelectorAll(".appliance").forEach(row => {
@@ -281,12 +333,14 @@ function calculateAppliances() {
     setMetricsEmpty(["aUnits", "aMonthly"], true);
     $("aMonthly").textContent = "—"; countState.delete($("aMonthly"));
     animateNumber($("aDaily"), 0, v => money(v));
+    $("appStatus").textContent = "กรอกอัตราค่าไฟเพื่อเริ่มคำนวณ";
   } else {
     setMetricsEmpty(["aUnits", "aMonthly"], false);
     const daily = totalUnits * rate;
     animateNumber($("aDaily"), daily, v => money(v));
     animateNumber($("aMonthly"), daily * 30, v => money(v));
     pulseBox($("appTotalBox"));
+    $("appStatus").textContent = `คำนวณแล้ว ค่าไฟประมาณ ${money(daily)} ต่อวัน หรือ ${money(daily * 30)} ต่อเดือน`;
   }
   $("breakdown").innerHTML = rate === null ? "" : `
     <div style="font-weight:800;margin-bottom:5px">ใช้ไฟประมาณรายเดือน</div>
@@ -299,6 +353,21 @@ $("appRate").addEventListener("input", calculateAppliances);
 $("addAppliance").onclick = () => addAppliance();
 addAppliance({ name: "แอร์", watts: 1200, minutes: 60 });
 
+let lastFocusedElement = null;
+function openSummaryModal() {
+  lastFocusedElement = document.activeElement;
+  $("fabWrap").classList.add("hidden");
+  $("summaryModal").classList.remove("hidden");
+  document.body.classList.add("modal-open");
+  requestAnimationFrame(() => $("closeSummary").focus());
+}
+function closeSummaryModal() {
+  $("summaryModal").classList.add("hidden");
+  $("fabWrap").classList.remove("hidden");
+  document.body.classList.remove("modal-open");
+  if (lastFocusedElement && document.contains(lastFocusedElement)) lastFocusedElement.focus();
+  lastFocusedElement = null;
+}
 function showSummary(type) {
   const card = $("captureCard");
   if (type === "bill") {
@@ -307,7 +376,11 @@ function showSummary(type) {
     if (billMethod === "meter") { const p = val("prevMeter"), c = val("currentMeter"); if (p !== null && c !== null && c >= p) units = c - p }
     else units = val("usedUnits");
     if (units === null || rate === null) { toast("กรอกหน่วยและอัตราค่าไฟก่อนนะ"); return }
-    const total = units * rate + service, per = total / people;
+    const energy = units * rate, total = energy + service, per = total / people;
+    setNumberImmediately("rEnergy", energy, money);
+    setNumberImmediately("rService", service, money);
+    setNumberImmediately("rPerson", per, money);
+    setNumberImmediately("rTotal", total, money);
     card.innerHTML = `
       <div class="capture-brand">${iconSvg("zap", 17)} ค่าไฟเด็กหอ · บิลจริง</div>
       <div class="capture-total">${money(total)}</div><div class="capture-sub">ยอดค่าไฟรวม</div>
@@ -323,6 +396,8 @@ function showSummary(type) {
     const rate = val("appRate"); if (rate === null) { toast("ใส่อัตราค่าไฟก่อนนะ"); return }
     let units = 0; appliances.forEach(a => units += (a.watts / 1000) * (a.minutes / 60));
     const daily = units * rate, monthly = daily * 30;
+    setNumberImmediately("aDaily", daily, money);
+    setNumberImmediately("aMonthly", monthly, money);
     card.innerHTML = `
       <div class="capture-brand">${iconSvg("zap", 17)} ค่าไฟเด็กหอ · ประมาณการ</div>
       <div class="capture-total">${money(daily)}</div><div class="capture-sub">ค่าไฟประมาณ / วัน</div>
@@ -335,12 +410,34 @@ function showSummary(type) {
       </div>
       <div class="note">เป็นการประมาณคร่าวๆ จากกำลังไฟและเวลาที่กรอก การใช้ไฟจริงอาจแตกต่างกัน</div>`;
   }
-  iconRefresh(); $("fabWrap").classList.add("hidden"); $("summaryModal").classList.remove("hidden");
+  iconRefresh(); openSummaryModal();
 }
 $("billSummary").onclick = () => showSummary("bill");
 $("appSummary").onclick = () => showSummary("app");
-$("closeSummary").onclick = () => { $("summaryModal").classList.add("hidden"); $("fabWrap").classList.remove("hidden") };
-$("summaryModal").addEventListener("click", e => { if (e.target === $("summaryModal")) $("closeSummary").click() });
+$("closeSummary").onclick = closeSummaryModal;
+$("summaryModal").addEventListener("click", e => { if (e.target === $("summaryModal")) closeSummaryModal() });
+document.addEventListener("keydown", e => {
+  const summaryOpen = !$("summaryModal").classList.contains("hidden");
+  const walkthroughOpen = !$("walkTip").classList.contains("hidden");
+  if (!summaryOpen && !walkthroughOpen) return;
+  if (e.key === "Escape") {
+    if (summaryOpen) closeSummaryModal();
+    else endWalk();
+    return;
+  }
+  if (e.key !== "Tab") return;
+  const container = summaryOpen ? $("summaryModal") : $("walkTip");
+  const focusable = [...container.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex=\"-1\"])")];
+  if (!focusable.length) return;
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if (e.shiftKey && document.activeElement === first) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+});
 
 function toast(text) { $("toast").textContent = text; $("toast").classList.add("show"); setTimeout(() => $("toast").classList.remove("show"), 2200) }
 
@@ -361,12 +458,15 @@ const walks = {
   ]
 };
 let walkSteps = [], walkIndex = 0;
+let lastWalkFocusedElement = null;
 function startWalkthrough(force = true) {
+  lastWalkFocusedElement = document.activeElement;
   walkSteps = walks[mode]; walkIndex = 0;
   $("walkOverlay").classList.remove("hidden");
   $("walkTip").classList.remove("hidden");
   $("spotlight").classList.add("hidden");
   renderWalk();
+  requestAnimationFrame(() => $("walkNext").focus());
 }
 function renderWalk() {
   const [target, title, text] = walkSteps[walkIndex];
@@ -451,6 +551,8 @@ function endWalk() {
   localStorage.setItem("electricity_walkthrough_seen", "true");
   walkCurrentEl = null;
   if (walkTrackRAF) { cancelAnimationFrame(walkTrackRAF); walkTrackRAF = null }
+  if (lastWalkFocusedElement && document.contains(lastWalkFocusedElement)) lastWalkFocusedElement.focus();
+  lastWalkFocusedElement = null;
 }
 $("walkNext").onclick = () => {
   if (walkIndex < walkSteps.length - 1) {
