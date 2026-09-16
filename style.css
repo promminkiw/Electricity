@@ -1164,6 +1164,12 @@
       pointer-events: none
     }
 
+    .walk-overlay.intro {
+      background: rgba(3, 14, 27, .72);
+      backdrop-filter: blur(6px);
+      pointer-events: auto;
+    }
+
     .spotlight {
       position: fixed;
       z-index: 151;
@@ -1184,6 +1190,68 @@
       border-radius: 18px;
       padding: 16px;
       box-shadow: 0 20px 55px rgba(0, 0, 0, .3)
+    }
+
+    .walk-tip.intro {
+      inset: 0;
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      transform: none !important;
+      width: 100% !important;
+      max-width: none;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 0;
+      padding: max(24px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .walk-tip.intro .walk-top,
+    .walk-tip.intro h4,
+    .walk-tip.intro p,
+    .walk-tip.intro .walk-actions {
+      width: min(390px, 100%);
+    }
+
+    .walk-tip.intro .walk-top,
+    .walk-tip.intro h4,
+    .walk-tip.intro p,
+    .walk-tip.intro .walk-actions {
+      background: var(--surface);
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+
+    .walk-tip.intro .walk-top {
+      padding-top: 20px;
+      border-radius: 22px 22px 0 0;
+    }
+
+    .walk-tip.intro h4 {
+      margin-top: 0;
+      margin-bottom: 0;
+      padding-top: 10px;
+      padding-bottom: 4px;
+    }
+
+    .walk-tip.intro p {
+      padding-top: 0;
+      padding-bottom: 18px;
+    }
+
+    .walk-tip.intro .walk-actions {
+      margin-top: 0;
+      padding-bottom: 20px;
+      border-radius: 0 0 22px 22px;
     }
 
     .walk-top {

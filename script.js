@@ -373,6 +373,8 @@ function renderWalk() {
 
   // ขั้นแรกเป็น Welcome/Introduction ก่อนเริ่ม Spotlight
   if (target === "intro") {
+    $("walkOverlay").classList.add("intro");
+    $("walkTip").classList.add("intro");
     $("spotlight").classList.add("hidden");
     $("walkTip").style.top = "50%";
     $("walkTip").style.left = "50%";
@@ -385,6 +387,8 @@ function renderWalk() {
     return;
   }
 
+  $("walkOverlay").classList.remove("intro");
+  $("walkTip").classList.remove("intro");
   $("walkTip").style.transform = "";
   $("walkTip").style.width = "min(330px,calc(100vw - 28px))";
 
@@ -442,7 +446,8 @@ function trackSpotlightDuringScroll() {
   step();
 }
 function endWalk() {
-  $("walkOverlay").classList.add("hidden"); $("spotlight").classList.add("hidden"); $("walkTip").classList.add("hidden");
+  $("walkOverlay").classList.add("hidden"); $("walkOverlay").classList.remove("intro");
+  $("spotlight").classList.add("hidden"); $("walkTip").classList.add("hidden"); $("walkTip").classList.remove("intro");
   localStorage.setItem("electricity_walkthrough_seen", "true");
   walkCurrentEl = null;
   if (walkTrackRAF) { cancelAnimationFrame(walkTrackRAF); walkTrackRAF = null }
