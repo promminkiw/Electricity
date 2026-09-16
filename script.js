@@ -522,10 +522,10 @@ if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-mot
       if (target === null) return;
       countState.set(el, 0);
       if (type === "money") {
-        jobs.push(() => animateNumber(el, target, v => money(v), 600));
+        jobs.push(() => animateNumber(el, target, v => money(v), 1600));
       } else {
         const suffix = numMatch ? text.slice(text.indexOf(numMatch[0]) + numMatch[0].length) : "";
-        jobs.push(() => animateNumber(el, target, v => num(v) + suffix, 600));
+        jobs.push(() => animateNumber(el, target, v => num(v) + suffix, 1600));
       }
     });
     const totalEl = document.getElementById(cfg.total);
@@ -536,7 +536,7 @@ if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-mot
       const target = Number.isFinite(stateTarget) ? stateTarget : (numMatch ? parseFloat(numMatch[0]) : null);
       if (target !== null) {
         countState.set(totalEl, 0);
-        jobs.push(() => animateNumber(totalEl, target, v => money(v), 700));
+        jobs.push(() => animateNumber(totalEl, target, v => money(v), 1700));
       }
     }
     jobs.forEach((job, i) => setTimeout(job, i * 70));
@@ -551,7 +551,7 @@ if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-mot
             $("compareBarPrevFill").style.height = prevPct + "%";
             $("compareBarNowFill").style.height = nowPct + "%";
           });
-        }, jobs.length * 70);
+        }, 0);
       }
     }
   }
@@ -561,7 +561,7 @@ if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-mot
       const cfg = revealTargets.find(t => document.querySelector(t.card) === entry.target);
       if (cfg) playReveal(cfg);
     });
-  }, { threshold: 0.4 });
+  }, { threshold: 0.5 });
   revealTargets.forEach(cfg => {
     const el = document.querySelector(cfg.card);
     if (el) revealObserver.observe(el);

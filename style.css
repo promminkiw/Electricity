@@ -470,7 +470,7 @@
 
     /* เอฟเฟกต์ตอนการ์ดผลลัพธ์เลื่อนเข้าจอครั้งแรก ให้รู้สึกว่าเว็บ "มีชีวิต" ขึ้นมา */
     .result-card.reveal-in .metric {
-      animation: metricRise .5s cubic-bezier(.22, 1, .36, 1) both
+      animation: metricRise 1.5s cubic-bezier(.22, 1, .36, 1) both
     }
 
     .result-card.reveal-in .metric:nth-of-type(1) {
@@ -490,7 +490,7 @@
     }
 
     .result-card.reveal-in .total-box {
-      animation: totalRise .55s cubic-bezier(.22, 1, .36, 1) both;
+      animation: totalRise 1.55s cubic-bezier(.22, 1, .36, 1) both;
       animation-delay: .26s
     }
 
@@ -783,7 +783,7 @@
       width: 100%;
       border-radius: 11px 11px 0 0;
       background: color-mix(in srgb, var(--accent) 35%, var(--surface-2));
-      transition: height .5s cubic-bezier(.4, 0, .2, 1)
+      transition: height 1.5s cubic-bezier(.4, 0, .2, 1)
     }
 
     .compare-bar-col.is-current .compare-bar-fill {
