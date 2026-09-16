@@ -21,7 +21,8 @@
           </div>
         </div>
         <div class="header-actions">
-          <button class="icon-btn mobile-mode-btn" id="mobileModeBtn" aria-label="เปลี่ยนโหมด" title="เปลี่ยนโหมด"></button>
+          <button class="icon-btn mobile-mode-btn" id="mobileModeBtn" aria-label="เปลี่ยนเป็นโหมดประมาณเครื่องใช้ไฟฟ้า"
+            title="เปลี่ยนเป็นโหมดประมาณเครื่องใช้ไฟฟ้า"></button>
           <button class="icon-btn" id="helpBtn" aria-label="ดูวิธีใช้งานอีกครั้ง"></button>
           <button class="icon-btn" id="themeBtn" aria-label="สลับธีม" aria-pressed="false"></button>
         </div>
@@ -48,13 +49,13 @@
             <div class="field-grid" id="meterFields" data-walk="meter">
               <div class="field">
                 <label for="prevMeter">เลขมิเตอร์ครั้งก่อน</label>
-                <input id="prevMeter" type="number" min="0" step="any" placeholder="เช่น 1,250">
-                <div class="error" id="prevError" role="alert" aria-live="assertive"></div>
+                <input id="prevMeter" type="number" min="0" step="any" inputmode="decimal" placeholder="เช่น 1,250">
+                <div class="error" id="prevError" aria-live="assertive"></div>
               </div>
               <div class="field">
                 <label for="currentMeter">เลขมิเตอร์ครั้งนี้</label>
-                <input id="currentMeter" type="number" min="0" step="any" placeholder="เช่น 1,370">
-                <div class="error" id="currentError" role="alert" aria-live="assertive"></div>
+                <input id="currentMeter" type="number" min="0" step="any" inputmode="decimal" placeholder="เช่น 1,370">
+                <div class="error" id="currentError" aria-live="assertive"></div>
               </div>
             </div>
             <button class="method-toggle-link" id="toggleMeterMode" type="button" aria-expanded="false"
@@ -80,7 +81,7 @@
                   <button type="button" class="rate-pill custom" id="rateCustomBtn" aria-pressed="false">กรอกเอง</button>
                 </div>
               </div>
-              <input id="billRateCustom" class="rate-custom-input" type="number" min="0" step="any"
+              <input id="billRateCustom" class="rate-custom-input" type="number" min="0" step="any" inputmode="decimal"
                 placeholder="กรอกอัตราเอง เช่น 8.5">
               <input id="billRate" type="hidden" value="8">
               <div class="helper">ไม่รู้อัตรา ลองดูจากสัญญาเช่าหรือถามผู้ดูแลหอ</div>
@@ -102,12 +103,12 @@
             <div class="more-options hidden" id="moreOptions">
               <div class="field">
                 <label for="serviceFee">ค่าบริการเพิ่มเติม (ถ้ามี)</label>
-                <input id="serviceFee" type="number" min="0" step="any" placeholder="เช่น 100">
+                <input id="serviceFee" type="number" min="0" step="any" inputmode="decimal" placeholder="เช่น 100">
                 <div class="example">ไม่กรอก = ฿0</div>
               </div>
               <div class="field">
                 <label for="lastBill">ยอดค่าไฟเดือนที่แล้ว (ถ้ามี)</label>
-                <input id="lastBill" type="number" min="0" step="any" placeholder="เช่น 880">
+                <input id="lastBill" type="number" min="0" step="any" inputmode="decimal" placeholder="เช่น 880">
                 <div class="helper">ใช้สำหรับเปรียบเทียบค่าไฟเดือนนี้กับเดือนก่อน</div>
               </div>
             </div>
@@ -170,7 +171,7 @@
           <div class="card-form">
             <div class="field" data-walk="rate2">
               <label for="appRate">อัตราค่าไฟ (บาท/หน่วย)</label>
-              <input id="appRate" data-walk="rate2" type="number" min="0" step="any" placeholder="เช่น 8">
+              <input id="appRate" data-walk="rate2" type="number" min="0" step="any" inputmode="decimal" placeholder="เช่น 8">
               <div class="helper">ไม่รู้อัตรา ลองดูจากสัญญาเช่าหรือถามผู้ดูแลหอ</div>
             </div>
 

@@ -50,8 +50,12 @@ function iconRefresh() {
 /* เลขยอดรวมค่อยๆ ไล่นับขึ้น/ลงแทนการกระโดดเปลี่ยนทันที และการ์ดผลลัพธ์กระพริบเบาๆ
    ตอนคำนวณเสร็จ เพื่อให้รู้สึกว่าเครื่องมือ "ตอบสนอง" ต่อสิ่งที่พิมพ์ ไม่ใช่แค่ค่านิ่งๆ */
 const countState = new WeakMap();
+const animationFrames = new WeakMap();
 function animateNumber(el, toValue, formatFn, duration) {
   duration = duration || 450;
+  const previousFrame = animationFrames.get(el);
+  if (previousFrame) cancelAnimationFrame(previousFrame);
+  animationFrames.delete(el);
   const prev = countState.get(el);
   const from = (prev === undefined || !Number.isFinite(prev)) ? toValue : prev;
   countState.set(el, toValue);
@@ -65,13 +69,20 @@ function animateNumber(el, toValue, formatFn, duration) {
     const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
     const current = from + (toValue - from) * eased;
     el.textContent = formatFn(current);
-    if (t < 1) requestAnimationFrame(tick);
-    else el.textContent = formatFn(toValue);
+    if (t < 1) {
+      animationFrames.set(el, requestAnimationFrame(tick));
+    } else {
+      animationFrames.delete(el);
+      el.textContent = formatFn(toValue);
+    }
   }
-  requestAnimationFrame(tick);
+  animationFrames.set(el, requestAnimationFrame(tick));
 }
 function setNumberImmediately(id, value, formatFn) {
   const el = $(id);
+  const previousFrame = animationFrames.get(el);
+  if (previousFrame) cancelAnimationFrame(previousFrame);
+  animationFrames.delete(el);
   countState.set(el, value);
   el.textContent = formatFn(value);
 }
@@ -85,6 +96,16 @@ function setMetricsEmpty(ids, isEmpty) {
     const box = $(id).closest(".metric");
     if (box) box.classList.toggle("is-empty", isEmpty);
   });
+}
+function clearBillResult(message) {
+  setMetricsEmpty(["rUnits", "rEnergy", "rService", "rPerson"], true);
+  ["rUnits", "rEnergy", "rService", "rPerson"].forEach(id => { $(id).textContent = "—"; countState.delete($(id)) });
+  setNumberImmediately("rTotal", 0, money);
+  $("rPersonSub").textContent = message;
+  $("billStatus").textContent = message;
+  $("comparisonChip").classList.add("hidden");
+  $("comparisonBars").classList.add("hidden");
+  $("highWarning").classList.add("hidden");
 }
 
 /* กราฟแท่งเปรียบเทียบเดือนก่อน/เดือนนี้: ถ้าการ์ดผลลัพธ์ยังไม่เคยเลื่อนเข้าจอ
@@ -115,6 +136,7 @@ setTheme(localStorage.getItem("electricity_theme") || "light");
 $("brandIcon").innerHTML = iconSvg("zap", 22);
 $("mobileModeBtn").innerHTML = iconSvg("sliders-horizontal", 20);
 $("mobileModeBtn").setAttribute("aria-label", "เปลี่ยนเป็นโหมดประมาณเครื่องใช้ไฟฟ้า");
+$("mobileModeBtn").title = "เปลี่ยนเป็นโหมดประมาณเครื่องใช้ไฟฟ้า";
 $("helpBtn").innerHTML = iconSvg("help-circle", 20);
 $("billSummaryIcon").innerHTML = iconSvg("scan-line", 17);
 $("addApplianceIcon").innerHTML = iconSvg("plus", 17);
@@ -190,21 +212,24 @@ function calculateBill() {
   const service = val("serviceFee") ?? 0;
   let units = null;
   $("prevError").textContent = ""; $("currentError").textContent = "";
+  $("prevMeter").setAttribute("aria-invalid", "false");
+  $("currentMeter").setAttribute("aria-invalid", "false");
   if (billMethod === "meter") {
     const prev = val("prevMeter"), cur = val("currentMeter");
     if (prev !== null && cur !== null) {
-      if (cur < prev) { $("currentError").textContent = "เลขมิเตอร์ครั้งนี้ต้องไม่น้อยกว่าครั้งก่อนนะ"; return }
+      if (cur < prev) {
+        const message = "เลขมิเตอร์ครั้งนี้ต้องไม่น้อยกว่าครั้งก่อนนะ";
+        $("currentError").textContent = message;
+        $("currentMeter").setAttribute("aria-invalid", "true");
+        clearBillResult(message);
+        return;
+      }
       units = cur - prev;
     }
   } else units = val("usedUnits");
 
   if (units === null || rate === null) {
-    setMetricsEmpty(["rUnits", "rEnergy", "rService", "rPerson"], true);
-    ["rUnits", "rEnergy", "rService", "rPerson"].forEach(id => { $(id).textContent = "—"; countState.delete($(id)) });
-    animateNumber($("rTotal"), 0, v => money(v));
-    $("rPersonSub").textContent = "กรอกหน่วยและอัตราค่าไฟเพื่อเริ่มคำนวณ";
-    $("billStatus").textContent = "กรอกหน่วยและอัตราค่าไฟเพื่อเริ่มคำนวณ";
-    $("comparisonChip").classList.add("hidden"); $("comparisonBars").classList.add("hidden"); $("highWarning").classList.add("hidden");
+    clearBillResult("กรอกหน่วยและอัตราค่าไฟเพื่อเริ่มคำนวณ");
     return;
   }
   setMetricsEmpty(["rUnits", "rEnergy", "rService", "rPerson"], false);
@@ -249,7 +274,9 @@ function switchMode(next) {
   $("heroDesc").textContent = mode === "bill" ? "มีเลขมิเตอร์หรือยอดหน่วยอยู่แล้ว? ใส่ข้อมูลไม่กี่ช่อง แล้วดูยอดรวมกับค่าไฟต่อคนได้ทันที" : "ยังไม่มีบิล? ใส่เครื่องใช้ไฟฟ้าที่ใช้ในห้อง แล้วดูค่าไฟคร่าวๆ";
   $("fabWrap").classList.remove("open");
   $("fab").setAttribute("aria-expanded", "false");
-  $("mobileModeBtn").setAttribute("aria-label", next === "bill" ? "เปลี่ยนเป็นโหมดประมาณเครื่องใช้ไฟฟ้า" : "เปลี่ยนเป็นโหมดคำนวณจากบิลจริง");
+  const nextModeLabel = next === "bill" ? "เปลี่ยนเป็นโหมดประมาณเครื่องใช้ไฟฟ้า" : "เปลี่ยนเป็นโหมดคำนวณจากบิลจริง";
+  $("mobileModeBtn").setAttribute("aria-label", nextModeLabel);
+  $("mobileModeBtn").title = nextModeLabel;
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 document.querySelectorAll("[data-switch]").forEach(b => b.onclick = () => switchMode(b.dataset.switch));
@@ -308,8 +335,8 @@ function renderAppliances() {
         <button class="remove-btn" aria-label="ลบเครื่องใช้ไฟฟ้า" onclick="removeAppliance(${a.id})">${iconSvg("trash-2", 17)}</button>
       </div>
       <div class="appliance-fields">
-        <div class="field" style="margin:0"><label for="app-watts-${a.id}">กำลังไฟ (W)</label><input id="app-watts-${a.id}" class="app-watts" type="number" min="0" step="any" value="${a.watts}"><div class="example">ค่าเริ่มต้นเป็นตัวอย่าง แก้ตามฉลากจริง</div></div>
-        <div class="field" style="margin:0"><label for="app-minutes-${a.id}">เวลาใช้งาน (นาที/วัน)</label><input id="app-minutes-${a.id}" class="app-minutes" type="number" min="0" step="any" value="${a.minutes}"><div class="example">ตัวอย่างเท่านั้น — ปรับตามการใช้งานจริง</div></div>
+        <div class="field" style="margin:0"><label for="app-watts-${a.id}">กำลังไฟ (W)</label><input id="app-watts-${a.id}" class="app-watts" type="number" min="0" step="any" inputmode="decimal" value="${a.watts}"><div class="example">ค่าเริ่มต้นเป็นตัวอย่าง แก้ตามฉลากจริง</div></div>
+        <div class="field" style="margin:0"><label for="app-minutes-${a.id}">เวลาใช้งาน (นาที/วัน)</label><input id="app-minutes-${a.id}" class="app-minutes" type="number" min="0" step="any" inputmode="decimal" value="${a.minutes}"><div class="example">ตัวอย่างเท่านั้น — ปรับตามการใช้งานจริง</div></div>
       </div>
     </div>`).join("");
   document.querySelectorAll(".appliance").forEach(row => {
@@ -668,4 +695,6 @@ if ("IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-mot
     const el = document.querySelector(cfg.card);
     if (el) revealObserver.observe(el);
   });
+} else {
+  document.querySelectorAll(".result-card").forEach(card => card.classList.add("reveal-in"));
 }
