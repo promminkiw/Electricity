@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#123B63">
+  <title>ค่าไฟเด็กหอ — คำนวณง่าย รู้ก่อนบิลมา</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="app" id="app">
+    <header class="header container">
+      <div class="header-inner">
+        <div class="brand">
+          <div class="brand-icon" id="brandIcon"></div>
+          <div>
+            <h1>ค่าไฟเด็กหอ</h1>
+            <p>คำนวณง่าย รู้ก่อนบิลมา</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" id="helpBtn" aria-label="ดูวิธีใช้งานอีกครั้ง"></button>
+          <button class="icon-btn" id="themeBtn" aria-label="สลับธีม"></button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h2 id="heroTitle">เช็กค่าไฟเดือนนี้<br>ให้รู้ก่อนบิลมา</h2>
+        <p id="heroDesc">มีเลขมิเตอร์หรือยอดหน่วยอยู่แล้ว? ใส่ข้อมูลไม่กี่ช่อง แล้วดูยอดรวมกับค่าไฟต่อคนได้ทันที</p>
+      </section>
+
+      <section class="card" id="billMode">
+        <div class="card-head">
+          <div>
+            <h3>คำนวณจากบิลจริง</h3>
+            <p class="card-desc">มีเลขมิเตอร์หรือรู้จำนวนหน่วยแล้ว เลือกวิธีที่สะดวกได้เลย</p>
+          </div>
+        </div>
+
+        <div class="card-split">
+          <div class="card-form">
+
+            <div class="field-grid" id="meterFields" data-walk="meter">
+              <div class="field">
+                <label for="prevMeter">เลขมิเตอร์ครั้งก่อน</label>
+                <input id="prevMeter" type="number" min="0" step="any" placeholder="เช่น 1,250">
+                <div class="error" id="prevError"></div>
+              </div>
+              <div class="field">
+                <label for="currentMeter">เลขมิเตอร์ครั้งนี้</label>
+                <input id="currentMeter" type="number" min="0" step="any" placeholder="เช่น 1,370">
+                <div class="error" id="currentError"></div>
+              </div>
+            </div>
+            <button class="method-toggle-link" id="toggleMeterMode" type="button"><span data-icon="scan-line"
+                data-icon-size="13"></span><span id="toggleMeterModeLabel">ไม่มีเลขมิเตอร์ครั้งก่อน?
+                กรอกจำนวนหน่วยเอง</span></button>
+
+            <div class="unit-display hidden" id="unitsValueWrap">
+              <div class="unit-display-top"><label for="usedUnits">หน่วยที่ใช้ (Units)</label></div>
+              <div class="unit-display-value">
+                <input id="usedUnits" type="number" min="0" step="any" placeholder="0" inputmode="decimal">
+                <span>หน่วย</span>
+              </div>
+            </div>
+
+            <div class="field" data-walk="rate">
+              <label for="billRateCustom">อัตราค่าไฟ (บาท / หน่วย)</label>
+              <div class="rate-row">
+                <div class="rate-pills" id="ratePills">
+                  <button type="button" class="rate-pill" data-rate="7">7 บ.</button>
+                  <button type="button" class="rate-pill" data-rate="8">8 บ.</button>
+                  <button type="button" class="rate-pill" data-rate="9">9 บ.</button>
+                  <button type="button" class="rate-pill custom" id="rateCustomBtn">กรอกเอง</button>
+                </div>
+              </div>
+              <input id="billRateCustom" class="rate-custom-input" type="number" min="0" step="any"
+                placeholder="กรอกอัตราเอง เช่น 8.5">
+              <input id="billRate" type="hidden" value="8">
+              <div class="helper">ไม่รู้อัตรา ลองดูจากสัญญาเช่าหรือถามผู้ดูแลหอ</div>
+            </div>
+
+            <div class="field" data-walk="people">
+              <label>จำนวนคนที่หารค่าไฟ</label>
+              <div class="stepper">
+                <button id="minusPeople" aria-label="ลดจำนวนคน">−</button>
+                <strong id="peopleValue">1 คน</strong>
+                <button id="plusPeople" aria-label="เพิ่มจำนวนคน">+</button>
+              </div>
+            </div>
+
+            <button class="more-options-toggle" id="moreOptionsToggle" type="button">
+              <span>ตัวเลือกเพิ่มเติม</span><span class="chevron" data-icon="chevron-down" data-icon-size="16"></span>
+            </button>
+            <div class="more-options hidden" id="moreOptions">
+              <div class="field">
+                <label for="serviceFee">ค่าบริการเพิ่มเติม (ถ้ามี)</label>
+                <input id="serviceFee" type="number" min="0" step="any" placeholder="เช่น 100">
+                <div class="example">ไม่กรอก = ฿0</div>
+              </div>
+              <div class="field">
+                <label for="lastBill">ยอดค่าไฟเดือนที่แล้ว (ถ้ามี)</label>
+                <input id="lastBill" type="number" min="0" step="any" placeholder="เช่น 880">
+                <div class="helper">ใช้สำหรับเปรียบเทียบค่าไฟเดือนนี้กับเดือนก่อน</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="result-card" id="billResult" data-walk="result">
+            <div class="result-title">
+              <span class="result-title-left"><span class="section-badge" data-icon="zap"
+                  data-icon-size="14"></span>สรุปค่าไฟเดือนนี้</span>
+              <span class="status-chip">รายเดือน</span>
+            </div>
+            <div class="result-grid">
+              <div class="metric is-empty"><span>หน่วยที่ใช้</span><strong id="rUnits">—</strong></div>
+              <div class="metric is-empty"><span>ค่าไฟก่อนค่าบริการ</span><strong id="rEnergy">—</strong></div>
+              <div class="metric is-empty"><span>ค่าบริการ</span><strong id="rService">—</strong></div>
+              <div class="metric is-empty"><span>หารต่อคน</span><strong id="rPerson">—</strong></div>
+            </div>
+
+            <div class="compare hidden" id="comparisonChip"></div>
+            <div class="compare-bars hidden" id="comparisonBars">
+              <div class="compare-bar-col" id="compareBarPrev">
+                <span class="compare-bar-value" id="compareBarPrevValue">—</span>
+                <div class="compare-bar-track">
+                  <div class="compare-bar-fill" id="compareBarPrevFill" style="height:0%"></div>
+                </div>
+                <span class="compare-bar-label"><span class="compare-bar-dot"></span>เดือนก่อน</span>
+              </div>
+              <div class="compare-bar-col is-current" id="compareBarNow">
+                <span class="compare-bar-value" id="compareBarNowValue">—</span>
+                <div class="compare-bar-track">
+                  <div class="compare-bar-fill" id="compareBarNowFill" style="height:0%"></div>
+                </div>
+                <span class="compare-bar-label"><span class="compare-bar-dot"></span>เดือนนี้</span>
+              </div>
+            </div>
+
+            <div class="total-box" id="billTotalBox">
+              <div><small>ยอดรวม</small>
+                <div class="per-person" id="rPersonSub">กรอกข้อมูลเพื่อเริ่มคำนวณ</div>
+              </div><strong id="rTotal">฿0</strong>
+            </div>
+            <div class="warning hidden" id="highWarning">ค่าไฟต่อคนค่อนข้างสูงนะ
+              👀<br>ลองเช็กเครื่องใช้ไฟฟ้าที่กินไฟเยอะ เช่น แอร์ เครื่องทำน้ำอุ่น หรือกระติกน้ำร้อน</div>
+            <button class="primary-btn summary-btn" id="billSummary"><span class="btn-icon"
+                id="billSummaryIcon"></span>สรุปผลเป็นการ์ด</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card hidden" id="applianceMode">
+        <div class="card-head">
+          <div>
+            <h3>ประมาณจากเครื่องใช้ไฟฟ้า</h3>
+            <p class="card-desc">ยังไม่มีบิล? ใส่เครื่องใช้ไฟฟ้าที่ใช้ในห้อง แล้วดูค่าไฟคร่าวๆ</p>
+          </div>
+        </div>
+
+        <div class="card-split">
+          <div class="card-form">
+            <div class="field" data-walk="rate2">
+              <label for="appRate">อัตราค่าไฟ (บาท/หน่วย)</label>
+              <input id="appRate" data-walk="rate2" type="number" min="0" step="any" placeholder="เช่น 8">
+              <div class="helper">ไม่รู้อัตรา ลองดูจากสัญญาเช่าหรือถามผู้ดูแลหอ</div>
+            </div>
+
+            <div class="appliance-list" id="applianceList" data-walk="appliances"></div>
+            <button class="secondary-btn add-btn" id="addAppliance" data-walk="addAppliance"><span class="btn-icon"
+                id="addApplianceIcon"></span>เพิ่มเครื่องใช้ไฟฟ้า</button>
+          </div>
+
+          <div class="result-card" id="appResult" data-walk="appResult">
+            <div class="result-title">ประมาณการใช้ไฟ</div>
+            <div class="result-grid">
+              <div class="metric is-empty"><span>หน่วยไฟรวม / วัน</span><strong id="aUnits">—</strong></div>
+              <div class="metric is-empty"><span>ค่าไฟประมาณ / เดือน</span><strong id="aMonthly">—</strong></div>
+            </div>
+            <div class="total-box" id="appTotalBox">
+              <div><small>ค่าไฟประมาณ</small>
+                <div class="per-person">ต่อวัน</div>
+              </div><strong id="aDaily">฿0</strong>
+            </div>
+            <div class="breakdown" id="breakdown"></div>
+            <div class="note">ตัวเลขนี้เป็นการประมาณคร่าวๆ จากกำลังไฟและเวลาที่คุณกรอก การใช้ไฟจริงอาจแตกต่างกันได้
+            </div>
+            <button class="primary-btn summary-btn" id="appSummary"><span class="btn-icon"
+                id="appSummaryIcon"></span>สรุปผลเป็นการ์ด</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="info-cards">
+        <div class="info-card">
+          <span class="info-card-icon" data-icon="sliders-horizontal" data-icon-size="19"></span>
+          <div>
+            <h4>วิธีคำนวณค่าไฟฟ้า</h4>
+            <p>ค่าไฟ = หน่วยที่ใช้ (kWh) × อัตราค่าไฟต่อหน่วย บวกค่าบริการเพิ่มเติม (ถ้ามี) แล้วหารตามจำนวนคนที่ร่วมจ่าย
+            </p>
+          </div>
+        </div>
+        <div class="info-card">
+          <span class="info-card-icon" data-icon="help-circle" data-icon-size="19"></span>
+          <div>
+            <h4>ความปลอดภัยและความเป็นส่วนตัว</h4>
+            <p>ข้อมูลทั้งหมดที่กรอกจะถูกคำนวณในเครื่องของคุณเท่านั้น ไม่มีการส่งหรือจัดเก็บข้อมูลไปที่เซิร์ฟเวอร์ใดๆ</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer container">
+      <strong>ค่าไฟเด็กหอ</strong><br>
+      เครื่องมือคำนวณค่าไฟแบบง่ายๆ สำหรับนักศึกษา<br><br>
+      <a href="#" id="footerHelp">ดูวิธีใช้งาน</a> ·
+      <a href="#" id="feedbackLink">แนะนำผู้พัฒนา</a><br><br>
+      คำนวณเพื่อประมาณการเท่านั้น
+    </footer>
+
+    <div class="fab-wrap" id="fabWrap">
+      <div class="fab-menu" id="fabMenu">
+        <button class="fab-option" data-switch="bill"><span class="btn-icon"
+            id="fabBillIcon"></span>คำนวณจากบิลจริง</button>
+        <button class="fab-option" data-switch="appliance"><span class="btn-icon"
+            id="fabApplianceIcon"></span>ประมาณจากเครื่องใช้ไฟฟ้า</button>
+      </div>
+      <button class="fab" id="fab" aria-label="เปลี่ยนโหมด"></button>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="summaryModal" role="dialog" aria-modal="true" aria-label="สรุปผล">
+    <div class="modal-card">
+      <div id="captureCard" class="capture"></div>
+      <div class="modal-actions">
+        <button class="secondary-btn" id="closeSummary">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="walk-overlay hidden" id="walkOverlay"></div>
+  <div class="spotlight hidden" id="spotlight"></div>
+  <div class="walk-tip hidden" id="walkTip">
+    <div class="walk-top"><span class="walk-count" id="walkCount">1 / 4</span><span class="btn-icon"
+        id="walkSparkleIcon"></span></div>
+    <h4 id="walkTitle"></h4>
+    <p id="walkText"></p>
+    <div class="walk-actions"><button id="walkSkip">ข้ามทั้งหมด</button><button class="next"
+        id="walkNext">ถัดไป</button></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="script.js" defer></script>
+</body>
+
+</html>
